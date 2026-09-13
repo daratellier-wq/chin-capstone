@@ -1,0 +1,12 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root = process.cwd();
+const dist = path.join(root,'dist');
+fs.rmSync(dist,{recursive:true,force:true});
+fs.mkdirSync(dist,{recursive:true});
+for (const name of ['index.html','app.js','styles.css']) fs.copyFileSync(path.join(root,name),path.join(dist,name));
+const sourceConfig=fs.readFileSync(path.join(root,'supabase-config.js'),'utf8');
+const url=process.env.SUPABASE_URL || (sourceConfig.match(/SUPABASE_URL\s*=\s*['\"]([^'\"]+)['\"]/ )||[])[1] || '__SUPABASE_URL__';
+const key=process.env.SUPABASE_ANON_KEY || (sourceConfig.match(/SUPABASE_ANON_KEY\s*=\s*['\"]([^'\"]+)['\"]/ )||[])[1] || '__SUPABASE_ANON_KEY__';
+fs.writeFileSync(path.join(dist,'supabase-config.js'),`export const SUPABASE_URL = ${JSON.stringify(url)};\nexport const SUPABASE_ANON_KEY = ${JSON.stringify(key)};\n`);
+console.log('Build complete: dist/');
